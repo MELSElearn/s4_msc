@@ -4,19 +4,47 @@
 		<meta charset="UTF-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="Access-Control-Allow-Origin" content="*">
 		<title>lesson1</title>
 		<script src="static/jquery.min.js"></script>
 		<script src="static/aframe.min.js"></script>
-		
+		<style>
+			body {
+				clear: both;
+			}
+
+			.container {
+				position: absolute;
+				width: 100%;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+				-ms-transform: translate(-50%, -50%);
+				z-index: 1000;
+				visibility: visible;
+			}
+
+			.btn {
+				position: absolute;
+				left: 50%;
+				top: 0;
+				transform: translate(-50%, -50%);
+				-ms-transform: translate(-50%, -50%);
+				border-radius: 5px;
+				padding: 16px 30px;
+				text-align: center;
+				cursor: pointer;
+				text-decoration: none;
+				color: black;
+				background-color: darkgrey;
+				font-size: 40px;
+			}
+		</style>
 	</head>
 	<body>
-		<a-scene>
+		<a-scene id="mainscene" visible="false">
 			<!-- 资源？ -->
 			<a-assets>
-				<audio id="click-sound">
-					<source src="static/sulver_4.mp3" type="audio/mpeg">
-					<source src="static/sulver_4.ogg" type="audio/ogg">
-				</audio>
 				<img id="start" crossorigin="anonymous" src="static/start.png">
 				<img id="star" crossorigin="anonymous" src="static/star.png">
 				<img id="arrow" crossorigin="anonymous" src="static/arrow.png">
@@ -28,11 +56,13 @@
 			<a-sky src="#bg" radius="15" rotation="" 0 0 0"></a-sky>
 
 			<!-- text -->
-			<a-text class="tips" font="kelsonsans" value="Please ->" width="6" position="0 0 -5" rotation="0 0 0" visible="false">
+			<a-text class="tips" font="kelsonsans" value="Please ->" width="6" position="0 0 -5" rotation="0 0 0"
+				visible="false">
 			</a-text>
 			<a-text font="kelsonsans" value="Press it！" width="6" position="2.1 1.6 -5" rotation="0 -20 0">
 			</a-text>
-			<a-text class="res-count" font="kelsonsans" value="Result(0/5)" width="6" position="3.7 1.8 -5" rotation="0 -20 0">
+			<a-text class="res-count" font="kelsonsans" value="Result(0/5)" width="6" position="3.7 1.8 -5"
+				rotation="0 -20 0">
 			</a-text>
 			<a-box opacity="0.3" color="white" width="2.5" height="2.5" depth="0.001" position="4.8 0.3 -5"
 				rotation="0 -20 0">
@@ -121,20 +151,29 @@
 			</a-entity>
 
 		</a-scene>
+		<audio preload controls id="sound" visible="false">
+			<source src="static/sulver_4.mp3" type="audio/mpeg">
+			<source src="static/sulver_4.ogg" type="audio/ogg">
+		</audio>
+		<div class="container" style="">
+			<button class="btn">Start</button>
+		</div>
+
 		<script>
 			let words = ['fox', 'dog', 'fog', 'box', 'log']
+			let end = 13.6
 			var dur = [4, 6, 8, 10, 12]
 			let index = 0
 			let answer = ''
 			var flag = 0
 
-			var sound = $("#click-sound")[0];
+			var sound = $("#sound")[0];
 			AFRAME.registerComponent('start-btn', {
 				schema: {
 					target: {
 						type: 'selector'
 					},
-					
+
 				},
 				init: function() {
 					var data = this.data;
@@ -175,7 +214,7 @@
 					let _this = this
 					let u_answer = $(_this).attr('class').trim()
 					this.setAttribute("visible", true);
-					
+
 					if (answer_timer) {
 						clearTimeout(answer_timer);
 					}
@@ -195,10 +234,13 @@
 								setTimeout(function() {
 									sound.pause()
 									// todo 改成特效？
-									if(index==words.length){
+									if (index == words.length) {
 										alert('You have completed this course！');
-										sessionStorage.setItem('completed', 'true');
-										window.location.href="start.html"
+										$('.container .btn').text('Learn again!');
+										$('#mainscene').attr('visible', 'false');
+										$("#sound").hide();
+										$('#mainscene').hide();
+										$('.container').show()
 									}
 								}, 1500)
 
@@ -210,6 +252,7 @@
 								$('.res-count')[0].setAttribute("value", "Result(" + index + "/5)")
 								// 标记：答对之后，开始下一题之前，不要再播放错误音频
 								answer = ''
+
 							} else {
 								console.log('错误')
 								flag = 0;
@@ -231,7 +274,7 @@
 							// if (answer == '') {
 							// 	console.log($(_this)[0].getAttribute('position'),$(_this)[0].getAttribute('rotation'))
 							// }
-							
+
 						}
 					}, 5500);
 				});
@@ -246,9 +289,17 @@
 						clearTimeout(answer_timer);
 						answer_timer = null;
 					}
-				
+
 				});
 			}
+			$('.container .btn').on('click', function() {
+				console.log($(this).parent())
+				$(this).parent().hide();
+				$('#mainscene')[0].setAttribute('visible', "true");
+				$('#mainscene').show(300);
+				sound.currentTime = end;
+				sound.play();
+			})
 		</script>
 	</body>
 </html>
